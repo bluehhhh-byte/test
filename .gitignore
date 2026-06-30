@@ -1,0 +1,14 @@
+# Generated data
+data.json
+summary.json
+summary.csv
+
+# Local build or analysis outputs
+outputs/
+*.docx
+*.hwpx
+*.png
+
+# Temporary or local helper files
+generate_assets.py
+
