@@ -43,6 +43,7 @@
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: #0f172a;
@@ -183,6 +184,45 @@
         .overview-sub {
             font-size: 0.75rem;
             color: var(--text-secondary);
+        }
+
+        /* Navigation Tabs for Views */
+        .view-tabs-container {
+            display: flex;
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid var(--panel-border);
+            padding: 0.35rem;
+            border-radius: 10px;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .view-tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .view-tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .view-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
         /* Controls / Filter Panel */
@@ -377,6 +417,93 @@
             padding: 0.5rem 0.75rem;
             border-radius: 6px;
             margin-top: 0.5rem;
+        }
+
+        /* Modern Table Views */
+        .table-view-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .table-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .export-btn {
+            background: var(--accent-success);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .export-btn:hover {
+            opacity: 0.9;
+        }
+
+        .export-btn:active {
+            transform: scale(0.98);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: #1f2937;
+            color: var(--text-secondary);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--panel-border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
         /* Sidebar Panels */
@@ -583,30 +710,99 @@
                 </div>
             </div>
 
-            <!-- Controls Panel -->
+            <!-- View Swapping Navigation Tabs -->
+            <div class="view-tabs-container">
+                <button class="view-tab-btn active" id="tab-cards" onclick="switchViewMode('cards')">
+                    🎴 대시보드 카드 뷰
+                </button>
+                <button class="view-tab-btn" id="tab-disasters-table" onclick="switchViewMode('disasters-table')">
+                    📊 재난발생 상세 내역 (표)
+                </button>
+                <button class="view-tab-btn" id="tab-facilities-table" onclick="switchViewMode('facilities-table')">
+                    🛡️ 안전시설 상세 내역 (표)
+                </button>
+            </div>
+
+            <!-- Controls Panel (Filters all views) -->
             <div class="controls-panel">
                 <div class="filter-group">
-                    <label for="typeFilter">재난 유형</label>
+                    <label for="typeFilter">재난/시설 유형</label>
                     <select id="typeFilter">
                         <option value="">모든 유형</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label for="regionFilter">발생 지역</label>
+                    <label for="regionFilter">발생/설치 지역</label>
                     <select id="regionFilter">
                         <option value="">모든 지역</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label for="searchQuery">지역 키워드 검색</label>
-                    <input type="text" id="searchQuery" placeholder="지역명을 직접 입력..." />
+                    <label for="searchQuery">키워드 검색</label>
+                    <input type="text" id="searchQuery" placeholder="지역 또는 코드/유형 입력..." />
                 </div>
                 <div class="result-count" id="resultCount">결과: 0건</div>
             </div>
 
-            <!-- Cards Container -->
+            <!-- VIEW 1: Cards Grid -->
             <div class="cards-grid" id="cardContainer">
                 <div class="no-results">데이터 로딩 중...</div>
+            </div>
+
+            <!-- VIEW 2: Disaster Table View -->
+            <div class="table-view-panel" id="disastersTablePanel" style="display: none;">
+                <div class="table-header-row">
+                    <span class="table-title">🚨 재난발생 현황 데이터 (재난발생_현황.csv)</span>
+                    <button class="export-btn" onclick="downloadCSV('disasters')">
+                        📥 CSV 다운로드
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>사건 ID</th>
+                                <th>발생일자</th>
+                                <th>재난유형</th>
+                                <th>발생지역</th>
+                                <th>규모등급</th>
+                                <th>피해금액 (만원)</th>
+                                <th>인명피해여부</th>
+                                <th>복구기간 (일)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="disastersTableBody">
+                            <!-- Rows injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW 3: Safety Facilities Table View -->
+            <div class="table-view-panel" id="facilitiesTablePanel" style="display: none;">
+                <div class="table-header-row">
+                    <span class="table-title">🛡️ 안전시설 현황 데이터 (안전시설_현황.csv)</span>
+                    <button class="export-btn" onclick="downloadCSV('facilities')">
+                        📥 CSV 다운로드
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>시설코드</th>
+                                <th>시설유형</th>
+                                <th>지역</th>
+                                <th>설치연도</th>
+                                <th>점검등급</th>
+                                <th>수용인원 (명)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="facilitiesTableBody">
+                            <!-- Rows injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
@@ -642,6 +838,10 @@
     <script>
         // Core state
         let allData = { disasters: [], facilities: [] };
+        let filteredDisasters = [];
+        let filteredFacilities = [];
+        
+        let currentViewMode = 'cards'; // 'cards' | 'disasters-table' | 'facilities-table'
         let currentFacilityTab = 'type'; // 'type' | 'region'
 
         // Initialize application
@@ -651,16 +851,20 @@
                 const response = await fetch('data.json');
                 allData = await response.json();
                 
+                // Initialize filtered arrays with full sets
+                filteredDisasters = [...allData.disasters];
+                filteredFacilities = [...allData.facilities];
+                
                 // Set overview metrics
                 calculateOverviewMetrics();
                 
                 // Populate filter dropdown choices
                 populateDropdowns();
                 
-                // Render initial disaster cards
-                renderDisasterCards(allData.disasters);
+                // Perform initial update (filters, renders)
+                updateUI();
                 
-                // Render initial facility summary
+                // Render initial facility summary (sidebar)
                 renderFacilitySummary();
 
                 // Load RSS feeds
@@ -723,18 +927,24 @@
             const typeSelect = document.getElementById('typeFilter');
             const regionSelect = document.getElementById('regionFilter');
 
-            // Unique values
-            const types = [...new Set(allData.disasters.map(d => d.재난유형))].filter(Boolean).sort();
-            const regions = [...new Set(allData.disasters.map(d => d.발생지역))].filter(Boolean).sort();
+            // Unique values (combined disaster types + facility types)
+            const disasterTypes = allData.disasters.map(d => d.재난유형);
+            const facilityTypes = allData.facilities.map(f => f.시설유형);
+            const allTypes = [...new Set([...disasterTypes, ...facilityTypes])].filter(Boolean).sort();
+            
+            // Unique regions (combined disaster regions + facility regions)
+            const disasterRegions = allData.disasters.map(d => d.발생지역);
+            const facilityRegions = allData.facilities.map(f => f.지역);
+            const allRegions = [...new Set([...disasterRegions, ...facilityRegions])].filter(Boolean).sort();
 
-            types.forEach(type => {
+            allTypes.forEach(type => {
                 const opt = document.createElement('option');
                 opt.value = type;
                 opt.textContent = type;
                 typeSelect.appendChild(opt);
             });
 
-            regions.forEach(reg => {
+            allRegions.forEach(reg => {
                 const opt = document.createElement('option');
                 opt.value = reg;
                 opt.textContent = reg;
@@ -742,13 +952,46 @@
             });
         }
 
+        // Main controller to render whichever view is selected
+        function updateUI() {
+            const countDisplay = document.getElementById('resultCount');
+
+            // Hide all view panels
+            document.getElementById('cardContainer').style.display = 'none';
+            document.getElementById('disastersTablePanel').style.display = 'none';
+            document.getElementById('facilitiesTablePanel').style.display = 'none';
+
+            if (currentViewMode === 'cards') {
+                document.getElementById('cardContainer').style.display = 'grid';
+                renderDisasterCards(filteredDisasters);
+                countDisplay.textContent = `결과: ${filteredDisasters.length}건`;
+            } else if (currentViewMode === 'disasters-table') {
+                document.getElementById('disastersTablePanel').style.display = 'flex';
+                renderDisastersTable(filteredDisasters);
+                countDisplay.textContent = `결과: ${filteredDisasters.length}건`;
+            } else if (currentViewMode === 'facilities-table') {
+                document.getElementById('facilitiesTablePanel').style.display = 'flex';
+                renderFacilitiesTable(filteredFacilities);
+                countDisplay.textContent = `결과: ${filteredFacilities.length}건`;
+            }
+        }
+
+        // View Mode Swapping
+        function switchViewMode(mode) {
+            currentViewMode = mode;
+            
+            // Toggle active tabs
+            document.querySelectorAll('.view-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${mode}`).classList.add('active');
+
+            // Re-apply filter based on tab because safety facilities use slightly different fields
+            performFiltering();
+        }
+
         // Render the filtered disasters list in card style format
         function renderDisasterCards(disasters) {
             const container = document.getElementById('cardContainer');
-            const countDisplay = document.getElementById('resultCount');
-
             container.innerHTML = '';
-            countDisplay.textContent = `결과: ${disasters.length}건`;
 
             if (disasters.length === 0) {
                 container.innerHTML = `
@@ -766,7 +1009,6 @@
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                // High cost classification (> 3억원) or severe level to satisfy user rules on dynamic visualization
                 const damageVal = parseFloat(item.피해금액_만원);
                 if (damageVal >= 30000.0) {
                     card.classList.add('high-damage');
@@ -808,16 +1050,74 @@
             });
         }
 
+        // Render Disasters Table Body
+        function renderDisastersTable(disasters) {
+            const tbody = document.getElementById('disastersTableBody');
+            tbody.innerHTML = '';
+
+            if (disasters.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 2rem;">검색 조건에 맞는 재난 기록이 없습니다.</td></tr>`;
+                return;
+            }
+
+            disasters.forEach(item => {
+                const tr = document.createElement('tr');
+                const isSevere = item.규모등급 >= 4;
+                const damageVal = parseFloat(item.피해금액_만원);
+                
+                tr.innerHTML = `
+                    <td><code>${item.사건ID}</code></td>
+                    <td>${item.발생일자}</td>
+                    <td><span class="disaster-badge badge-${item.재난유형}" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;">${item.재난유형}</span></td>
+                    <td>${item.발생지역}</td>
+                    <td style="font-weight: 600; color: ${isSevere ? '#ef4444' : 'inherit'}">${item.규모등급} 등급</td>
+                    <td style="font-weight: 600; text-align: right; color: ${damageVal >= 30000 ? '#fca5a5' : 'inherit'}">${damageVal ? damageVal.toLocaleString() : '-'}</td>
+                    <td style="text-align: center; font-weight: 600; color: ${item.인명피해여부 === 'Y' ? '#ef4444' : '#10b981'}">${item.인명피해여부}</td>
+                    <td style="text-align: right;">${item.복구기간_일 ? item.복구기간_일.toLocaleString() : '-'}일</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Safety Facilities Table Body
+        function renderFacilitiesTable(facilities) {
+            const tbody = document.getElementById('facilitiesTableBody');
+            tbody.innerHTML = '';
+
+            if (facilities.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">검색 조건에 맞는 안전시설이 없습니다.</td></tr>`;
+                return;
+            }
+
+            facilities.forEach(item => {
+                const tr = document.createElement('tr');
+                let gradeColor = 'inherit';
+                if (item.점검등급 === 'A') gradeColor = '#10b981';
+                else if (item.점검등급 === 'B') gradeColor = '#3b82f6';
+                else if (item.점검등급 === 'C') gradeColor = '#f59e0b';
+                else if (item.점검등급 === 'D' || item.점검등급 === 'E') gradeColor = '#ef4444';
+
+                tr.innerHTML = `
+                    <td><code>${item.시설코드}</code></td>
+                    <td><strong>${item.시설유형}</strong></td>
+                    <td>${item.지역}</td>
+                    <td>${item.설치연도}년</td>
+                    <td style="text-align: center; font-weight: 700; color: ${gradeColor};">${item.점검등급} 등급</td>
+                    <td style="text-align: right; font-weight: 600;">${item.수용인원 ? item.수용인원.toLocaleString() : '-'}명</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         // Toggle Sidebar Tab
         function switchFacilityTab(tab) {
             currentFacilityTab = tab;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            // Set clicked button to active
             event.target.classList.add('active');
             renderFacilitySummary();
         }
 
-        // Calculate and Render Facility Stats
+        // Calculate and Render Facility Stats (Sidebar Progress Bars)
         function renderFacilitySummary() {
             const container = document.getElementById('facilitySummaryContainer');
             container.innerHTML = '';
@@ -843,7 +1143,6 @@
                 });
             }
 
-            // Convert to array and sort by count descending
             const sortedStats = Object.entries(summaryMap).sort((a, b) => b[1] - a[1]);
 
             sortedStats.forEach(([name, count]) => {
@@ -861,7 +1160,6 @@
                 `;
                 container.appendChild(item);
 
-                // Animate progress bar fill after injection
                 setTimeout(() => {
                     const fill = item.querySelector('.stat-progress-fill');
                     if (fill) fill.style.width = `${percentage}%`;
@@ -875,19 +1173,65 @@
             const regionVal = document.getElementById('regionFilter').value;
             const queryVal = document.getElementById('searchQuery').value.trim().toLowerCase();
 
-            const filtered = allData.disasters.filter(item => {
+            // 1. Filter disasters
+            filteredDisasters = allData.disasters.filter(item => {
                 const matchType = typeVal === '' || item.재난유형 === typeVal;
                 const matchRegion = regionVal === '' || item.발생지역 === regionVal;
-                
-                // Allow fuzzy search in region name or type name as well
                 const matchSearch = queryVal === '' || 
                     (item.발생지역 && item.발생지역.toLowerCase().includes(queryVal)) ||
-                    (item.재난유형 && item.재난유형.toLowerCase().includes(queryVal));
+                    (item.재난유형 && item.재난유형.toLowerCase().includes(queryVal)) ||
+                    (item.사건ID && item.사건ID.toLowerCase().includes(queryVal));
 
                 return matchType && matchRegion && matchSearch;
             });
 
-            renderDisasterCards(filtered);
+            // 2. Filter safety facilities
+            filteredFacilities = allData.facilities.filter(item => {
+                const matchType = typeVal === '' || item.시설유형 === typeVal;
+                const matchRegion = regionVal === '' || item.지역 === regionVal;
+                const matchSearch = queryVal === '' || 
+                    (item.지역 && item.지역.toLowerCase().includes(queryVal)) ||
+                    (item.시설유형 && item.시설유형.toLowerCase().includes(queryVal)) ||
+                    (item.시설코드 && item.시설코드.toLowerCase().includes(queryVal)) ||
+                    (item.점검등급 && item.점검등급.toLowerCase() === queryVal);
+
+                return matchType && matchRegion && matchSearch;
+            });
+
+            // Update UI based on active tab
+            updateUI();
+        }
+
+        // Export current filtered dataset to CSV file dynamically
+        function downloadCSV(type) {
+            let csvContent = "data:text/csv;charset=utf-8,\ufeff"; // Add BOM for Excel compatibility
+            let filename = "";
+
+            if (type === 'disasters') {
+                filename = "재난발생_현황_필터결과.csv";
+                // Header row
+                csvContent += "사건ID,발생일자,재난유형,발생지역,규모등급,피해금액_만원,인명피해여부,복구기간_일\n";
+                // Data rows
+                filteredDisasters.forEach(d => {
+                    csvContent += `"${d.사건ID}","${d.발생일자}","${d.재난유형}","${d.발생지역}",${d.규모등급},${d.피해금액_만원 || ""},"${d.인명피해여부}",${d.복구기간_일 || ""}\n`;
+                });
+            } else if (type === 'facilities') {
+                filename = "안전시설_현황_필터결과.csv";
+                // Header row
+                csvContent += "시설코드,시설유형,지역,설치연도,점검등급,수용인원\n";
+                // Data rows
+                filteredFacilities.forEach(f => {
+                    csvContent += `"${f.시설코드}","${f.시설유형}","${f.지역}",${f.설치연도},"${f.점검등급}",${f.수용인원 || ""}\n`;
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Fetch RSS policies from korea.kr RSS feed (Ministry of the Interior and Safety)
@@ -896,7 +1240,6 @@
             const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
             const container = document.getElementById('rssContainer');
 
-            // Fallback content in case CORS proxy fails or runs offline
             const fallbackNews = [
                 {
                     title: "행정안전부, 풍수해 감지 정보 고도화를 통한 주민 사전 대피체계 마련",
